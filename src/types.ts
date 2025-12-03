@@ -1,6 +1,8 @@
 export interface User {
   id: number;
   username: string;
+  email: string;
+  password?: string;
   created_at: string;
 }
 
@@ -9,7 +11,6 @@ export interface Recording {
   user_id: number;
   filename: string;
   original_name: string;
-  type: 'voice' | 'drum';
   size: number;
   duration: number | null;
   created_at: string;

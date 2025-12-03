@@ -10,15 +10,33 @@
     <div class="container">
         <header>
             <h1>🎙️ ExpressRecorder</h1>
-            <p>Enregistreur de voix et de batterie</p>
+            <p>Enregistreur vocal professionnel</p>
         </header>
 
-        <!-- Login Section -->
-        <div id="login-section" class="section">
-            <h2>Connexion</h2>
-            <div class="login-form">
-                <input type="text" id="username" placeholder="Nom d'utilisateur" />
-                <button onclick="login()">Se connecter</button>
+        <!-- Login/Register Section -->
+        <div id="auth-section" class="section">
+            <div class="auth-tabs">
+                <button id="tab-login" class="tab-button active" onclick="showLoginForm()">Connexion</button>
+                <button id="tab-register" class="tab-button" onclick="showRegisterForm()">Inscription</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form">
+                <h2>Se connecter</h2>
+                <input type="email" id="login-email" placeholder="Email" required />
+                <input type="password" id="login-password" placeholder="Mot de passe" required />
+                <button onclick="login()" class="btn-primary">Se connecter</button>
+                <p class="error-message" id="login-error"></p>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-form" class="auth-form hidden">
+                <h2>Créer un compte</h2>
+                <input type="text" id="register-username" placeholder="Nom d'utilisateur" required />
+                <input type="email" id="register-email" placeholder="Email" required />
+                <input type="password" id="register-password" placeholder="Mot de passe (min. 8 caractères)" required />
+                <button onclick="register()" class="btn-primary">S'inscrire</button>
+                <p class="error-message" id="register-error"></p>
             </div>
         </div>
 
@@ -32,17 +50,6 @@
             <!-- Recording Controls -->
             <div class="recorder-section">
                 <h2>Nouvel enregistrement</h2>
-                
-                <div class="recorder-type">
-                    <label>
-                        <input type="radio" name="recordingType" value="voice" checked />
-                        🎤 Voix
-                    </label>
-                    <label>
-                        <input type="radio" name="recordingType" value="drum" />
-                        🥁 Batterie
-                    </label>
-                </div>
 
                 <div class="recorder-controls">
                     <button id="start-recording" onclick="startRecording()" class="btn-primary">

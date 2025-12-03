@@ -11,6 +11,8 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -22,7 +24,6 @@ db.serialize(() => {
       user_id INTEGER NOT NULL,
       filename TEXT NOT NULL,
       original_name TEXT NOT NULL,
-      type TEXT NOT NULL,
       size INTEGER NOT NULL,
       duration REAL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

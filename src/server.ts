@@ -5,6 +5,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 import db from './database';
 import { User, Recording } from './types';
 
@@ -77,36 +78,104 @@ app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
-// Get or create user session
-app.post('/api/login', (req: Request, res: Response) => {
-  const { username } = req.body;
+// Helper function to validate email
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Register new user
+app.post('/api/register', async (req: Request, res: Response) => {
+  const { username, email, password } = req.body;
   
+  // Validation
   if (!username || username.trim() === '') {
-    return res.status(400).json({ error: 'Username is required' });
+    return res.status(400).json({ error: 'Le nom d\'utilisateur est requis' });
+  }
+  
+  if (!email || !isValidEmail(email)) {
+    return res.status(400).json({ error: 'Adresse email valide requise' });
+  }
+  
+  if (!password || password.length < 8) {
+    return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères' });
   }
 
-  db.get('SELECT * FROM users WHERE username = ?', [username], (err: Error | null, user: User) => {
-    if (err) {
-      return res.status(500).json({ error: 'Database error' });
-    }
+  try {
+    // Hash password with bcrypt (10 rounds)
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (user) {
-      req.session.userId = user.id;
-      req.session.username = user.username;
-      return res.json({ user: { id: user.id, username: user.username } });
-    }
+    db.run(
+      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+      [username.trim(), email.toLowerCase().trim(), hashedPassword],
+      function(this: any, err: Error | null) {
+        if (err) {
+          if (err.message.includes('UNIQUE constraint')) {
+            return res.status(400).json({ error: 'Ce nom d\'utilisateur ou email est déjà utilisé' });
+          }
+          return res.status(500).json({ error: 'Erreur lors de la création du compte' });
+        }
 
-    // Create new user
-    db.run('INSERT INTO users (username) VALUES (?)', [username], function(this: any, err: Error | null) {
+        req.session.userId = this.lastID;
+        req.session.username = username.trim();
+        res.json({ 
+          user: { 
+            id: this.lastID, 
+            username: username.trim(),
+            email: email.toLowerCase().trim()
+          } 
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Error during registration:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de l\'inscription' });
+  }
+});
+
+// Login user
+app.post('/api/login', async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email et mot de passe requis' });
+  }
+
+  db.get(
+    'SELECT * FROM users WHERE email = ?',
+    [email.toLowerCase().trim()],
+    async (err: Error | null, user: User) => {
       if (err) {
-        return res.status(500).json({ error: 'Failed to create user' });
+        return res.status(500).json({ error: 'Erreur de base de données' });
       }
 
-      req.session.userId = this.lastID;
-      req.session.username = username;
-      res.json({ user: { id: this.lastID, username: username } });
-    });
-  });
+      if (!user) {
+        return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+      }
+
+      try {
+        // Compare password with hash
+        const passwordMatch = await bcrypt.compare(password, user.password!);
+        
+        if (!passwordMatch) {
+          return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+        }
+
+        req.session.userId = user.id;
+        req.session.username = user.username;
+        res.json({ 
+          user: { 
+            id: user.id, 
+            username: user.username,
+            email: user.email
+          } 
+        });
+      } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ error: 'Erreur serveur lors de la connexion' });
+      }
+    }
+  );
 });
 
 // Get current user
@@ -143,16 +212,15 @@ app.post('/api/recordings', upload.single('recording'), (req: Request, res: Resp
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
-  const { type, duration } = req.body;
+  const { duration } = req.body;
 
   db.run(
-    `INSERT INTO recordings (user_id, filename, original_name, type, size, duration) 
-     VALUES (?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO recordings (user_id, filename, original_name, size, duration) 
+     VALUES (?, ?, ?, ?, ?)`,
     [
       req.session.userId,
       req.file.filename,
       req.file.originalname,
-      type || 'voice',
       req.file.size,
       duration || null
     ],
@@ -165,7 +233,6 @@ app.post('/api/recordings', upload.single('recording'), (req: Request, res: Resp
         id: this.lastID,
         filename: req.file!.filename,
         original_name: req.file!.originalname,
-        type: type || 'voice',
         size: req.file!.size,
         duration: duration || null
       });

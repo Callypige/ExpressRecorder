@@ -18,12 +18,74 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Show login or register form
+function showLoginForm() {
+    document.getElementById('login-form').classList.remove('hidden');
+    document.getElementById('register-form').classList.add('hidden');
+    document.getElementById('tab-login').classList.add('active');
+    document.getElementById('tab-register').classList.remove('active');
+    document.getElementById('login-error').textContent = '';
+}
+
+function showRegisterForm() {
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('register-form').classList.remove('hidden');
+    document.getElementById('tab-login').classList.remove('active');
+    document.getElementById('tab-register').classList.add('active');
+    document.getElementById('register-error').textContent = '';
+}
+
+// Register function
+async function register() {
+    const username = document.getElementById('register-username').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    const password = document.getElementById('register-password').value;
+    const errorElement = document.getElementById('register-error');
+    
+    errorElement.textContent = '';
+
+    if (!username || !email || !password) {
+        errorElement.textContent = 'Tous les champs sont requis';
+        return;
+    }
+
+    if (password.length < 8) {
+        errorElement.textContent = 'Le mot de passe doit contenir au moins 8 caractères';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showApp(data.user);
+        } else {
+            errorElement.textContent = data.error || 'Erreur lors de l\'inscription';
+        }
+    } catch (error) {
+        errorElement.textContent = 'Erreur de connexion au serveur';
+        console.error(error);
+    }
+}
+
 // Login function
 async function login() {
-    const username = document.getElementById('username').value.trim();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errorElement = document.getElementById('login-error');
     
-    if (!username) {
-        alert('Veuillez entrer un nom d\'utilisateur');
+    errorElement.textContent = '';
+
+    if (!email || !password) {
+        errorElement.textContent = 'Email et mot de passe requis';
         return;
     }
 
@@ -33,7 +95,7 @@ async function login() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username })
+            body: JSON.stringify({ email, password })
         });
 
         const data = await response.json();
@@ -41,10 +103,10 @@ async function login() {
         if (response.ok) {
             showApp(data.user);
         } else {
-            alert(data.error || 'Erreur de connexion');
+            errorElement.textContent = data.error || 'Erreur de connexion';
         }
     } catch (error) {
-        alert('Erreur de connexion au serveur');
+        errorElement.textContent = 'Erreur de connexion au serveur';
         console.error(error);
     }
 }
@@ -61,7 +123,7 @@ async function logout() {
 
 // Show app after login
 function showApp(user) {
-    document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('auth-section').classList.add('hidden');
     document.getElementById('app-section').classList.remove('hidden');
     document.getElementById('current-user').textContent = user.username;
     loadRecordings();
@@ -143,12 +205,10 @@ async function saveRecording() {
         return;
     }
 
-    const recordingType = document.querySelector('input[name="recordingType"]:checked').value;
     const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
     
     const formData = new FormData();
     formData.append('recording', currentRecordingBlob, `recording-${Date.now()}.webm`);
-    formData.append('type', recordingType);
     formData.append('duration', duration);
 
     try {
@@ -194,11 +254,11 @@ async function loadRecordings() {
         recordingsList.innerHTML = data.recordings.map(recording => `
             <div class="recording-item">
                 <div class="recording-icon">
-                    ${recording.type === 'voice' ? '🎤' : '🥁'}
+                    🎤
                 </div>
                 <div class="recording-info">
                     <div class="recording-title">
-                        ${recording.type === 'voice' ? 'Enregistrement vocal' : 'Enregistrement batterie'}
+                        Enregistrement vocal
                     </div>
                     <div class="recording-meta">
                         ${formatDate(recording.created_at)} • 
@@ -266,14 +326,32 @@ function formatDuration(seconds) {
     return `${mins}:${String(secs).padStart(2, '0')}`;
 }
 
-// Handle Enter key in login form
+// Handle Enter key in forms
 document.addEventListener('DOMContentLoaded', () => {
-    const usernameInput = document.getElementById('username');
-    if (usernameInput) {
-        usernameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                login();
-            }
+    const loginEmail = document.getElementById('login-email');
+    const loginPassword = document.getElementById('login-password');
+    const registerUsername = document.getElementById('register-username');
+    const registerEmail = document.getElementById('register-email');
+    const registerPassword = document.getElementById('register-password');
+    
+    if (loginEmail && loginPassword) {
+        loginEmail.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+        loginPassword.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+    }
+    
+    if (registerUsername && registerEmail && registerPassword) {
+        registerUsername.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') register();
+        });
+        registerEmail.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') register();
+        });
+        registerPassword.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') register();
         });
     }
 });

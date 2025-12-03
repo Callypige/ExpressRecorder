@@ -1,26 +1,28 @@
-const express = require('express');
-const session = require('express-session');
-const bodyParser = require('body-parser');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const db = require('./database');
+import express, { Request, Response, NextFunction } from 'express';
+import session from 'express-session';
+import bodyParser from 'body-parser';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import crypto from 'crypto';
+import db from './database';
+import { User, Recording } from './types';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
+const uploadsDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir);
 }
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
     cb(null, uploadsDir);
   },
-  filename: (req, file, cb) => {
+  filename: (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, 'recording-' + uniqueSuffix + path.extname(file.originalname));
   }
@@ -28,12 +30,12 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
     // Accept audio files only
     if (file.mimetype.startsWith('audio/')) {
       cb(null, true);
     } else {
-      cb(new Error('Only audio files are allowed!'), false);
+      cb(new Error('Only audio files are allowed!'));
     }
   },
   limits: {
@@ -45,32 +47,36 @@ const upload = multer({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
-  secret: 'expressrecorder-secret-key',
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false }
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
 }));
 
 // Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/uploads', express.static(uploadsDir));
 
 // Routes
 
 // Home page
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get('/', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 // Get or create user session
-app.post('/api/login', (req, res) => {
+app.post('/api/login', (req: Request, res: Response) => {
   const { username } = req.body;
   
   if (!username || username.trim() === '') {
     return res.status(400).json({ error: 'Username is required' });
   }
 
-  db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {
+  db.get('SELECT * FROM users WHERE username = ?', [username], (err: Error | null, user: User) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -82,7 +88,7 @@ app.post('/api/login', (req, res) => {
     }
 
     // Create new user
-    db.run('INSERT INTO users (username) VALUES (?)', [username], function(err) {
+    db.run('INSERT INTO users (username) VALUES (?)', [username], function(this: any, err: Error | null) {
       if (err) {
         return res.status(500).json({ error: 'Failed to create user' });
       }
@@ -95,7 +101,7 @@ app.post('/api/login', (req, res) => {
 });
 
 // Get current user
-app.get('/api/user', (req, res) => {
+app.get('/api/user', (req: Request, res: Response) => {
   if (!req.session.userId) {
     return res.status(401).json({ error: 'Not logged in' });
   }
@@ -109,13 +115,17 @@ app.get('/api/user', (req, res) => {
 });
 
 // Logout
-app.post('/api/logout', (req, res) => {
-  req.session.destroy();
-  res.json({ message: 'Logged out successfully' });
+app.post('/api/logout', (req: Request, res: Response) => {
+  req.session.destroy((err: Error) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to logout' });
+    }
+    res.json({ message: 'Logged out successfully' });
+  });
 });
 
 // Upload recording
-app.post('/api/recordings', upload.single('recording'), (req, res) => {
+app.post('/api/recordings', upload.single('recording'), (req: Request, res: Response) => {
   if (!req.session.userId) {
     return res.status(401).json({ error: 'Not logged in' });
   }
@@ -137,17 +147,17 @@ app.post('/api/recordings', upload.single('recording'), (req, res) => {
       req.file.size,
       duration || null
     ],
-    function(err) {
+    function(this: any, err: Error | null) {
       if (err) {
         return res.status(500).json({ error: 'Failed to save recording' });
       }
 
       res.json({
         id: this.lastID,
-        filename: req.file.filename,
-        original_name: req.file.originalname,
+        filename: req.file!.filename,
+        original_name: req.file!.originalname,
         type: type || 'voice',
-        size: req.file.size,
+        size: req.file!.size,
         duration: duration || null
       });
     }
@@ -155,7 +165,7 @@ app.post('/api/recordings', upload.single('recording'), (req, res) => {
 });
 
 // Get user's recordings
-app.get('/api/recordings', (req, res) => {
+app.get('/api/recordings', (req: Request, res: Response) => {
   if (!req.session.userId) {
     return res.status(401).json({ error: 'Not logged in' });
   }
@@ -163,7 +173,7 @@ app.get('/api/recordings', (req, res) => {
   db.all(
     'SELECT * FROM recordings WHERE user_id = ? ORDER BY created_at DESC',
     [req.session.userId],
-    (err, recordings) => {
+    (err: Error | null, recordings: Recording[]) => {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
       }
@@ -174,7 +184,7 @@ app.get('/api/recordings', (req, res) => {
 });
 
 // Delete recording
-app.delete('/api/recordings/:id', (req, res) => {
+app.delete('/api/recordings/:id', (req: Request, res: Response) => {
   if (!req.session.userId) {
     return res.status(401).json({ error: 'Not logged in' });
   }
@@ -185,7 +195,7 @@ app.delete('/api/recordings/:id', (req, res) => {
   db.get(
     'SELECT * FROM recordings WHERE id = ? AND user_id = ?',
     [recordingId, req.session.userId],
-    (err, recording) => {
+    (err: Error | null, recording: Recording) => {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
       }
@@ -196,7 +206,7 @@ app.delete('/api/recordings/:id', (req, res) => {
 
       // Delete file
       const filePath = path.join(uploadsDir, recording.filename);
-      fs.unlink(filePath, (err) => {
+      fs.unlink(filePath, (err: NodeJS.ErrnoException | null) => {
         if (err && err.code !== 'ENOENT') {
           console.error('Error deleting file:', err);
         }
@@ -206,7 +216,7 @@ app.delete('/api/recordings/:id', (req, res) => {
       db.run(
         'DELETE FROM recordings WHERE id = ? AND user_id = ?',
         [recordingId, req.session.userId],
-        (err) => {
+        (err: Error | null) => {
           if (err) {
             return res.status(500).json({ error: 'Failed to delete recording' });
           }

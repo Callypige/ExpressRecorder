@@ -1,6 +1,6 @@
 # ExpressRecorder
 
-Une application web d'enregistrement audio (voix et batterie) construite avec Node.js/Express.js et une interface front-end moderne.
+Une application web d'enregistrement audio (voix et batterie) construite avec Node.js/Express.js, TypeScript et une interface front-end moderne.
 
 ## Fonctionnalités
 
@@ -11,6 +11,7 @@ Une application web d'enregistrement audio (voix et batterie) construite avec No
 - 📱 **Compatible mobile et PC** - Interface responsive qui fonctionne sur tous les appareils
 - 🎧 **Lecture audio** - Écoutez vos enregistrements directement dans l'application
 - 🗑️ **Gestion des enregistrements** - Supprimez les enregistrements dont vous n'avez plus besoin
+- 📘 **TypeScript** - Code entièrement typé pour plus de sécurité et maintenabilité
 
 ## Installation
 
@@ -25,7 +26,7 @@ cd ExpressRecorder
 npm install
 ```
 
-3. Démarrez le serveur :
+3. Compilez le TypeScript et démarrez le serveur :
 ```bash
 npm start
 ```
@@ -37,26 +38,31 @@ http://localhost:3000
 
 ## Technologies utilisées
 
-- **Backend** : Node.js, Express.js
+- **Backend** : Node.js, Express.js, TypeScript
 - **Base de données** : SQLite3
 - **Upload de fichiers** : Multer
 - **Sessions** : Express-session
 - **Frontend** : HTML5, CSS3, JavaScript vanilla
 - **API Web** : MediaRecorder API pour l'enregistrement audio
+- **Typage** : TypeScript avec définitions de types complètes
 
 ## Structure du projet
 
 ```
 ExpressRecorder/
-├── server.js           # Serveur Express principal
-├── database.js         # Configuration de la base de données
-├── package.json        # Dépendances et scripts
-├── public/             # Fichiers statiques
-│   ├── index.html     # Interface utilisateur
-│   ├── styles.css     # Styles CSS
-│   └── app.js         # Logique front-end
-├── uploads/           # Répertoire des enregistrements (généré automatiquement)
-└── recordings.db      # Base de données SQLite (généré automatiquement)
+├── src/                   # Code source TypeScript
+│   ├── server.ts         # Serveur Express principal
+│   ├── database.ts       # Configuration de la base de données
+│   └── types.ts          # Définitions de types TypeScript
+├── dist/                  # Code JavaScript compilé (généré)
+├── public/                # Fichiers statiques
+│   ├── index.html        # Interface utilisateur
+│   ├── styles.css        # Styles CSS
+│   └── app.js            # Logique front-end
+├── uploads/              # Répertoire des enregistrements (généré automatiquement)
+├── tsconfig.json         # Configuration TypeScript
+├── package.json          # Dépendances et scripts
+└── recordings.db         # Base de données SQLite (généré automatiquement)
 ```
 
 ## Utilisation
@@ -93,12 +99,30 @@ Le serveur utilise le port 3000 par défaut. Vous pouvez le changer en définiss
 PORT=8080 npm start
 ```
 
+### Variables d'environnement
+
+- `PORT` - Port du serveur (par défaut: 3000)
+- `SESSION_SECRET` - Secret pour les sessions (généré automatiquement si non défini)
+- `NODE_ENV` - Environment (`production` active les cookies sécurisés HTTPS)
+
 ## Développement
 
-Pour le développement, vous pouvez utiliser :
+Pour le développement avec rechargement automatique, vous pouvez utiliser :
 
 ```bash
 npm run dev
+```
+
+Pour compiler le TypeScript en mode watch :
+
+```bash
+npm run watch
+```
+
+Pour compiler le TypeScript manuellement :
+
+```bash
+npm run build
 ```
 
 ## Licence

@@ -1,13 +1,21 @@
 {
   "name": "expressrecorder",
   "version": "1.0.0",
-  "description": "Voice and drum recorder application with Express.js",
-  "main": "server.js",
+  "description": "Voice and drum recorder application with Express.js and TypeScript",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "build": "tsc",
+    "start": "npm run build && node dist/server.js",
+    "dev": "ts-node src/server.ts",
+    "watch": "tsc --watch"
   },
-  "keywords": ["recorder", "audio", "voice", "express"],
+  "keywords": [
+    "recorder",
+    "audio",
+    "voice",
+    "express",
+    "typescript"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -16,5 +24,13 @@
     "express-session": "^1.18.2",
     "multer": "^2.0.2",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/express-session": "^1.18.2",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.10.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

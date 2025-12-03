@@ -1,7 +1,7 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+import sqlite3 from 'sqlite3';
+import path from 'path';
 
-const dbPath = path.join(__dirname, 'recordings.db');
+const dbPath = path.join(__dirname, '..', 'recordings.db');
 const db = new sqlite3.Database(dbPath);
 
 // Initialize database schema
@@ -31,4 +31,4 @@ db.serialize(() => {
   `);
 });
 
-module.exports = db;
+export default db;

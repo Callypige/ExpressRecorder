@@ -1,6 +1,6 @@
 # ExpressRecorder
 
-Une application web d'enregistrement audio (voix et batterie) construite avec Node.js/Express.js, TypeScript et une interface front-end moderne.
+Une application web d'enregistrement audio construite avec Node.js/Express.js, TypeScript et une interface front-end moderne.
 
 ## Fonctionnalités
 
@@ -70,7 +70,6 @@ ExpressRecorder/
 1. **Connexion** : Entrez un nom d'utilisateur pour vous connecter (un nouveau compte sera créé automatiquement si nécessaire)
 
 2. **Enregistrement** :
-   - Choisissez le type d'enregistrement (Voix ou Batterie)
    - Cliquez sur "Démarrer l'enregistrement"
    - Autorisez l'accès au microphone si demandé
    - Parlez ou jouez votre rythme

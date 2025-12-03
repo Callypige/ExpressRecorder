@@ -5,6 +5,54 @@ let recordingStartTime;
 let timerInterval;
 let currentRecordingBlob;
 
+// Utility functions for toast and modal
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+function showModal(title, message) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const cancelBtn = document.getElementById('modal-cancel');
+        const confirmBtn = document.getElementById('modal-confirm');
+        
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        
+        overlay.classList.remove('hidden');
+        setTimeout(() => overlay.classList.add('show'), 10);
+        
+        const handleCancel = () => {
+            cleanup();
+            resolve(false);
+        };
+        
+        const handleConfirm = () => {
+            cleanup();
+            resolve(true);
+        };
+        
+        const cleanup = () => {
+            overlay.classList.remove('show');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+            cancelBtn.removeEventListener('click', handleCancel);
+            confirmBtn.removeEventListener('click', handleConfirm);
+        };
+        
+        cancelBtn.addEventListener('click', handleCancel);
+        confirmBtn.addEventListener('click', handleConfirm);
+    });
+}
+
 // Check for user session on page load
 window.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -169,7 +217,7 @@ async function startRecording() {
         timerInterval = setInterval(updateTimer, 1000);
         
     } catch (error) {
-        alert('Erreur d\'accès au microphone. Veuillez autoriser l\'accès au microphone.');
+        showToast('Erreur d\'accès au microphone. Veuillez autoriser l\'accès.', 'error');
         console.error('Error accessing microphone:', error);
     }
 }
@@ -201,7 +249,7 @@ function updateTimer() {
 // Save recording
 async function saveRecording() {
     if (!currentRecordingBlob) {
-        alert('Aucun enregistrement à sauvegarder');
+        showToast('Aucun enregistrement à sauvegarder', 'warning');
         return;
     }
 
@@ -218,15 +266,15 @@ async function saveRecording() {
         });
 
         if (response.ok) {
-            alert('Enregistrement sauvegardé avec succès!');
+            showToast('Enregistrement sauvegardé avec succès!', 'success');
             discardRecording();
             loadRecordings();
         } else {
             const data = await response.json();
-            alert(data.error || 'Erreur lors de la sauvegarde');
+            showToast(data.error || 'Erreur lors de la sauvegarde', 'error');
         }
     } catch (error) {
-        alert('Erreur de connexion au serveur');
+        showToast('Erreur de connexion au serveur', 'error');
         console.error(error);
     }
 }
@@ -281,7 +329,12 @@ async function loadRecordings() {
 
 // Delete recording
 async function deleteRecording(id) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet enregistrement?')) {
+    const confirmed = await showModal(
+        'Supprimer l\'enregistrement',
+        'Êtes-vous sûr de vouloir supprimer cet enregistrement? Cette action est irréversible.'
+    );
+    
+    if (!confirmed) {
         return;
     }
 
@@ -291,13 +344,14 @@ async function deleteRecording(id) {
         });
 
         if (response.ok) {
+            showToast('Enregistrement supprimé avec succès', 'success');
             loadRecordings();
         } else {
             const data = await response.json();
-            alert(data.error || 'Erreur lors de la suppression');
+            showToast(data.error || 'Erreur lors de la suppression', 'error');
         }
     } catch (error) {
-        alert('Erreur de connexion au serveur');
+        showToast('Erreur de connexion au serveur', 'error');
         console.error(error);
     }
 }

@@ -10,7 +10,7 @@
     <div class="container">
         <header>
             <h1>🎙️ ExpressRecorder</h1>
-            <p>Enregistreur vocal professionnel</p>
+            <p>Enregistreur vocal</p>
         </header>
 
         <!-- Login/Register Section -->
@@ -88,6 +88,21 @@
                 <div id="recordings-list" class="recordings-list">
                     <p class="empty-state">Aucun enregistrement pour le moment</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 id="modal-title"></h3>
+            <p id="modal-message"></p>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn-secondary">Annuler</button>
+                <button id="modal-confirm" class="btn-danger">Confirmer</button>
             </div>
         </div>
     </div>

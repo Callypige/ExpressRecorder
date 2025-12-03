@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpressRecorder - Enregistreur Audio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎙️ ExpressRecorder</h1>
+            <p>Enregistreur de voix et de batterie</p>
+        </header>
+
+        <!-- Login Section -->
+        <div id="login-section" class="section">
+            <h2>Connexion</h2>
+            <div class="login-form">
+                <input type="text" id="username" placeholder="Nom d'utilisateur" />
+                <button onclick="login()">Se connecter</button>
+            </div>
+        </div>
+
+        <!-- Main App Section -->
+        <div id="app-section" class="section hidden">
+            <div class="user-info">
+                <span>Connecté en tant que: <strong id="current-user"></strong></span>
+                <button onclick="logout()" class="btn-secondary">Déconnexion</button>
+            </div>
+
+            <!-- Recording Controls -->
+            <div class="recorder-section">
+                <h2>Nouvel enregistrement</h2>
+                
+                <div class="recorder-type">
+                    <label>
+                        <input type="radio" name="recordingType" value="voice" checked />
+                        🎤 Voix
+                    </label>
+                    <label>
+                        <input type="radio" name="recordingType" value="drum" />
+                        🥁 Batterie
+                    </label>
+                </div>
+
+                <div class="recorder-controls">
+                    <button id="start-recording" onclick="startRecording()" class="btn-primary">
+                        ⏺ Démarrer l'enregistrement
+                    </button>
+                    <button id="stop-recording" onclick="stopRecording()" class="btn-danger hidden">
+                        ⏹ Arrêter l'enregistrement
+                    </button>
+                </div>
+
+                <div id="recording-status" class="status hidden">
+                    <div class="recording-indicator">
+                        <span class="pulse"></span>
+                        <span>Enregistrement en cours...</span>
+                    </div>
+                    <div id="recording-timer">00:00</div>
+                </div>
+
+                <div id="preview-section" class="hidden">
+                    <h3>Aperçu de l'enregistrement</h3>
+                    <audio id="preview-audio" controls></audio>
+                    <div class="preview-controls">
+                        <button onclick="saveRecording()" class="btn-success">
+                            💾 Sauvegarder
+                        </button>
+                        <button onclick="discardRecording()" class="btn-secondary">
+                            🗑️ Annuler
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recordings List -->
+            <div class="recordings-section">
+                <h2>Mes enregistrements</h2>
+                <div id="recordings-list" class="recordings-list">
+                    <p class="empty-state">Aucun enregistrement pour le moment</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

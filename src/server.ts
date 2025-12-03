@@ -43,11 +43,20 @@ const upload = multer({
   }
 });
 
+// Validate session secret in production
+const getSessionSecret = (): string => {
+  if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+    console.error('ERROR: SESSION_SECRET environment variable is required in production');
+    process.exit(1);
+  }
+  return process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+};
+
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
-  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+  secret: getSessionSecret(),
   resave: false,
   saveUninitialized: true,
   cookie: { 

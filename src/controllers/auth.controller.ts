@@ -3,6 +3,10 @@ import bcrypt from 'bcrypt';
 import db from '../database';
 import { User } from '../types';
 
+/*
+    Controller for user authentication: registration, login, logout, and fetching current user.
+*/
+
 // Helper function to validate email
 const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

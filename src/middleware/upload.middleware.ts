@@ -33,7 +33,7 @@ const upload = multer({
   fileFilter: (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
     // Accept audio files only
     if (file.mimetype.startsWith('audio/')) {
-      cb(null, true);
+      cb(null, true); // Accept file
     } else {
       cb(new Error('Seuls les fichiers audio sont autorisés !'));
     }

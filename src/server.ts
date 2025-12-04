@@ -1,71 +1,22 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import session from 'express-session';
 import bodyParser from 'body-parser';
-import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import db from './database';
 import { User, Recording } from './types';
+import { upload, uploadsDir } from './middleware/upload.middleware';
+import { sessionConfig } from './config/session.config';
+import { requireAuth } from './middleware/auth.middleware';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'recording-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  fileFilter: (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-    // Accept audio files only
-    if (file.mimetype.startsWith('audio/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only audio files are allowed!'));
-    }
-  },
-  limits: {
-    fileSize: 50 * 1024 * 1024 // 50MB max file size
-  }
-});
-
-// Validate session secret in production
-const getSessionSecret = (): string => {
-  if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
-    console.error('ERROR: SESSION_SECRET environment variable is required in production');
-    process.exit(1);
-  }
-  return process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
-};
-
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-  secret: getSessionSecret(),
-  resave: false,
-  saveUninitialized: true,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
+app.use(session(sessionConfig));
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -179,11 +130,7 @@ app.post('/api/login', async (req: Request, res: Response) => {
 });
 
 // Get current user
-app.get('/api/user', (req: Request, res: Response) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: 'Not logged in' });
-  }
-
+app.get('/api/user', requireAuth, (req: Request, res: Response) => {
   res.json({ 
     user: { 
       id: req.session.userId, 
@@ -203,11 +150,7 @@ app.post('/api/logout', (req: Request, res: Response) => {
 });
 
 // Upload recording
-app.post('/api/recordings', upload.single('recording'), (req: Request, res: Response) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: 'Not logged in' });
-  }
-
+app.post('/api/recordings', requireAuth, upload.single('recording'), (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
@@ -241,11 +184,7 @@ app.post('/api/recordings', upload.single('recording'), (req: Request, res: Resp
 });
 
 // Get user's recordings
-app.get('/api/recordings', (req: Request, res: Response) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: 'Not logged in' });
-  }
-
+app.get('/api/recordings', requireAuth, (req: Request, res: Response) => {
   db.all(
     'SELECT * FROM recordings WHERE user_id = ? ORDER BY created_at DESC',
     [req.session.userId],
@@ -260,11 +199,7 @@ app.get('/api/recordings', (req: Request, res: Response) => {
 });
 
 // Delete recording
-app.delete('/api/recordings/:id', (req: Request, res: Response) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: 'Not logged in' });
-  }
-
+app.delete('/api/recordings/:id', requireAuth, (req: Request, res: Response) => {
   const recordingId = req.params.id;
 
   // Get recording info to delete file

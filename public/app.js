@@ -315,7 +315,7 @@ async function loadRecordings() {
                     </div>
                 </div>
                 <div class="recording-actions">
-                    <audio controls src="/uploads/${recording.filename}"></audio>
+                    <audio controls src="${recording.filename}"></audio>
                     <button class="btn-delete" onclick="deleteRecording(${recording.id})">
                         🗑️ Supprimer
                     </button>

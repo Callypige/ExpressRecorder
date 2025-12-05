@@ -2,10 +2,12 @@ import express, { Request, Response } from 'express';
 import session from 'express-session';
 import bodyParser from 'body-parser';
 import path from 'path';
-import { uploadsDir } from './middleware/upload.middleware';
+import dotenv from 'dotenv';
 import { sessionConfig } from './config/session.config';
 import authRoutes from './routes/auth.routes';
 import recordingsRoutes from './routes/recordings.routes';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,7 +19,6 @@ app.use(session(sessionConfig));
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
-app.use('/uploads', express.static(uploadsDir));
 
 // Routes
 app.use('/api', authRoutes);
@@ -30,5 +31,7 @@ app.get('/', (req: Request, res: Response) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`ExpressRecorder server running on http://localhost:${PORT}`);
+  console.log(`✅ ExpressRecorder server running on http://localhost:${PORT}`);
+  console.log(`📦 Database: PostgreSQL`);
+  console.log(`☁️  Storage: Cloudinary`);
 });

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import db from '../database';
+import pool from '../database';
 import { User } from '../types';
 
 /*
@@ -34,30 +34,27 @@ export const register = async (req: Request, res: Response) => {
     // Hash password with bcrypt (10 rounds)
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    db.run(
-      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-      [username.trim(), email.toLowerCase().trim(), hashedPassword],
-      function(this: any, err: Error | null) {
-        if (err) {
-          if (err.message.includes('UNIQUE constraint')) {
-            return res.status(400).json({ error: 'Ce nom d\'utilisateur ou email est déjà utilisé' });
-          }
-          return res.status(500).json({ error: 'Erreur lors de la création du compte' });
-        }
-
-        req.session.userId = this.lastID;
-        req.session.username = username.trim();
-        res.json({ 
-          user: { 
-            id: this.lastID, 
-            username: username.trim(),
-            email: email.toLowerCase().trim()
-          } 
-        });
-      }
+    const result = await pool.query(
+      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
+      [username.trim(), email.toLowerCase().trim(), hashedPassword]
     );
-  } catch (error) {
+
+    const user = result.rows[0];
+    req.session.userId = user.id;
+    req.session.username = user.username;
+    
+    res.json({ 
+      user: { 
+        id: user.id, 
+        username: user.username,
+        email: user.email
+      } 
+    });
+  } catch (error: any) {
     console.error('Error during registration:', error);
+    if (error.code === '23505') { // PostgreSQL unique violation
+      return res.status(400).json({ error: 'Ce nom d\'utilisateur ou email est déjà utilisé' });
+    }
     res.status(500).json({ error: 'Erreur serveur lors de l\'inscription' });
   }
 };
@@ -70,41 +67,38 @@ export const login = async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Email et mot de passe requis' });
   }
 
-  db.get(
-    'SELECT * FROM users WHERE email = ?',
-    [email.toLowerCase().trim()],
-    async (err: Error | null, user: User) => {
-      if (err) {
-        return res.status(500).json({ error: 'Erreur de base de données' });
-      }
+  try {
+    const result = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email.toLowerCase().trim()]
+    );
 
-      if (!user) {
-        return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
-      }
+    const user = result.rows[0];
 
-      try {
-        // Compare password with hash
-        const passwordMatch = await bcrypt.compare(password, user.password!);
-        
-        if (!passwordMatch) {
-          return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
-        }
-
-        req.session.userId = user.id;
-        req.session.username = user.username;
-        res.json({ 
-          user: { 
-            id: user.id, 
-            username: user.username,
-            email: user.email
-          } 
-        });
-      } catch (error) {
-        console.error('Error during login:', error);
-        res.status(500).json({ error: 'Erreur serveur lors de la connexion' });
-      }
+    if (!user) {
+      return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
-  );
+
+    // Compare password with hash
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+    }
+
+    req.session.userId = user.id;
+    req.session.username = user.username;
+    res.json({ 
+      user: { 
+        id: user.id, 
+        username: user.username,
+        email: user.email
+      } 
+    });
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la connexion' });
+  }
 };
 
 // Get current user

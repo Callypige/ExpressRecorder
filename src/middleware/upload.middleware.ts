@@ -1,29 +1,34 @@
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { Request } from 'express';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 /*
-    Middleware for handling audio file uploads using Multer.
+    Middleware for handling audio file uploads using Multer and Cloudinary.
+    Files are uploaded directly to Cloudinary cloud storage.
     Ensures only audio files are accepted and limits file size to 50 MB.
 */
 
-// Path of the uploads directory
-const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// Create uploads directory if it doesn't exist
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-
-// Multer storage configuration
-const storage = multer.diskStorage({
-  destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'recording-' + uniqueSuffix + path.extname(file.originalname));
+// Cloudinary storage configuration
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req: Request, file: Express.Multer.File) => {
+    return {
+      folder: 'express-recorder',
+      resource_type: 'auto',
+      allowed_formats: ['mp3', 'wav', 'ogg', 'webm', 'm4a', 'aac'],
+      public_id: `recording-${Date.now()}-${Math.round(Math.random() * 1E9)}`
+    };
   }
 });
 
@@ -43,4 +48,4 @@ const upload = multer({
   }
 });
 
-export { upload, uploadsDir };
+export { upload, cloudinary };

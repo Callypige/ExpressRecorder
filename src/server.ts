@@ -29,6 +29,22 @@ app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
+// Error pages
+app.get('/error', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'error.html'));
+});
+
+// 404 handler
+app.use((req: Request, res: Response) => {
+  res.status(404).sendFile(path.join(__dirname, '..', 'public', 'error.html'));
+});
+
+// Error handler
+app.use((err: any, req: Request, res: Response, next: any) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).sendFile(path.join(__dirname, '..', 'public', 'error.html'));
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`✅ ExpressRecorder server running on http://localhost:${PORT}`);

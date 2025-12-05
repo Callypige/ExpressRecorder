@@ -259,11 +259,25 @@ async function saveRecording() {
     formData.append('recording', currentRecordingBlob, `recording-${Date.now()}.webm`);
     formData.append('duration', duration);
 
+    // Deactivate the save button
+    const saveBtn = event?.target;
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = '⏳ Envoi en cours...';
+    }
+
     try {
+        // Timeout after 60 seconds
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+
         const response = await fetch('/api/recordings', {
             method: 'POST',
-            body: formData
+            body: formData,
+            signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (response.ok) {
             showToast('Enregistrement sauvegardé avec succès!', 'success');
@@ -274,8 +288,18 @@ async function saveRecording() {
             showToast(data.error || 'Erreur lors de la sauvegarde', 'error');
         }
     } catch (error) {
-        showToast('Erreur de connexion au serveur', 'error');
+        if (error.name === 'AbortError') {
+            showToast('L\'envoi a pris trop de temps. Réessayez avec un enregistrement plus court.', 'error');
+        } else {
+            showToast('Erreur de connexion au serveur', 'error');
+        }
         console.error(error);
+    } finally {
+        // Réactiver le bouton
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = '💾 Sauvegarder';
+        }
     }
 }
 

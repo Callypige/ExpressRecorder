@@ -259,15 +259,33 @@ async function saveRecording() {
     formData.append('recording', currentRecordingBlob, `recording-${Date.now()}.webm`);
     formData.append('duration', duration);
 
-    // Deactivate the save button
-    const saveBtn = event?.target;
-    if (saveBtn) {
-        saveBtn.disabled = true;
-        saveBtn.textContent = '⏳ Envoi en cours...';
-    }
+    // Afficher l'indicateur de chargement
+    const saveBtn = document.getElementById('save-btn');
+    const discardBtn = document.getElementById('discard-btn');
+    const btnText = document.getElementById('save-btn-text');
+    const btnSpinner = document.getElementById('save-btn-spinner');
+    const uploadProgress = document.getElementById('upload-progress');
+    const uploadStatus = document.getElementById('upload-status');
+    const progressFill = document.getElementById('progress-fill');
+
+    saveBtn.disabled = true;
+    discardBtn.disabled = true;
+    btnText.textContent = 'Envoi en cours';
+    btnSpinner.classList.remove('hidden');
+    uploadProgress.classList.remove('hidden');
+    uploadStatus.textContent = 'Envoi en cours...';
+    
+    // Animation de la barre de progression
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        if (progress < 90) {
+            progress += Math.random() * 10;
+            progressFill.style.width = Math.min(progress, 90) + '%';
+        }
+    }, 300);
 
     try {
-        // Timeout after 60 seconds
+        // Timeout de 60 secondes
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 60000);
 
@@ -278,28 +296,41 @@ async function saveRecording() {
         });
 
         clearTimeout(timeoutId);
+        clearInterval(progressInterval);
+        progressFill.style.width = '100%';
 
         if (response.ok) {
-            showToast('Enregistrement sauvegardé avec succès!', 'success');
-            discardRecording();
-            loadRecordings();
+            uploadStatus.textContent = '✅ Enregistrement sauvegardé !';
+            setTimeout(() => {
+                showToast('Enregistrement sauvegardé avec succès!', 'success');
+                discardRecording();
+                loadRecordings();
+            }, 500);
         } else {
             const data = await response.json();
+            uploadStatus.textContent = '❌ Erreur lors de l\'envoi';
             showToast(data.error || 'Erreur lors de la sauvegarde', 'error');
         }
     } catch (error) {
+        clearInterval(progressInterval);
         if (error.name === 'AbortError') {
+            uploadStatus.textContent = '❌ Timeout dépassé';
             showToast('L\'envoi a pris trop de temps. Réessayez avec un enregistrement plus court.', 'error');
         } else {
+            uploadStatus.textContent = '❌ Erreur de connexion';
             showToast('Erreur de connexion au serveur', 'error');
         }
         console.error(error);
     } finally {
-        // Réactiver le bouton
-        if (saveBtn) {
+        // Réinitialiser l'interface
+        setTimeout(() => {
             saveBtn.disabled = false;
-            saveBtn.textContent = '💾 Sauvegarder';
-        }
+            discardBtn.disabled = false;
+            btnText.textContent = '💾 Sauvegarder';
+            btnSpinner.classList.add('hidden');
+            uploadProgress.classList.add('hidden');
+            progressFill.style.width = '0%';
+        }, response?.ok ? 1000 : 2000);
     }
 }
 

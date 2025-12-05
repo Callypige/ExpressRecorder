@@ -72,12 +72,19 @@
                     <h3>Aperçu de l'enregistrement</h3>
                     <audio id="preview-audio" controls></audio>
                     <div class="preview-controls">
-                        <button onclick="saveRecording()" class="btn-success">
-                            💾 Sauvegarder
+                        <button id="save-btn" onclick="saveRecording()" class="btn-success">
+                            <span id="save-btn-text">💾 Sauvegarder</span>
+                            <span id="save-btn-spinner" class="btn-spinner hidden">⏳</span>
                         </button>
-                        <button onclick="discardRecording()" class="btn-secondary">
+                        <button id="discard-btn" onclick="discardRecording()" class="btn-secondary">
                             🗑️ Annuler
                         </button>
+                    </div>
+                    <div id="upload-progress" class="upload-progress hidden">
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <p id="upload-status" class="upload-status">Envoi en cours...</p>
                     </div>
                 </div>
             </div>

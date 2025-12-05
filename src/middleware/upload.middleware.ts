@@ -1,6 +1,6 @@
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import CloudinaryStorage from 'multer-storage-cloudinary';
 import { Request } from 'express';
 import dotenv from 'dotenv';
 
@@ -20,7 +20,7 @@ cloudinary.config({
 });
 
 // Cloudinary storage configuration
-const storage = new CloudinaryStorage({
+const storage = new (CloudinaryStorage as any)({
   cloudinary: cloudinary,
   params: async (req: Request, file: Express.Multer.File) => {
     return {

@@ -1,10 +1,13 @@
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
-import CloudinaryStorage from 'multer-storage-cloudinary';
-import { Request } from 'express';
 import dotenv from 'dotenv';
+import { Request } from 'express';
 
 dotenv.config();
+
+// Import dynamique pour compatibilité avec multer-storage-cloudinary v2
+const CloudinaryStorageLib = require('multer-storage-cloudinary');
+const CloudinaryStorage = CloudinaryStorageLib.CloudinaryStorage || CloudinaryStorageLib;
 
 /*
     Middleware for handling audio file uploads using Multer and Cloudinary.
@@ -20,7 +23,7 @@ cloudinary.config({
 });
 
 // Cloudinary storage configuration
-const storage = new (CloudinaryStorage as any)({
+const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req: Request, file: Express.Multer.File) => {
     return {

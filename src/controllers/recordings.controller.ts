@@ -53,6 +53,35 @@ export const getRecordings = async (req: Request, res: Response) => {
   }
 };
 
+// Update a recording name
+export const updateRecording = async (req: Request, res: Response) => {
+  const recordingId = req.params.id;
+  const { original_name } = req.body;
+
+  if (!original_name || original_name.trim() === '') {
+    return res.status(400).json({ error: 'Le nom ne peut pas être vide' });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE recordings SET original_name = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
+      [original_name.trim(), recordingId, req.session.userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Enregistrement non trouvé' });
+    }
+
+    res.json({ 
+      message: 'Nom modifié avec succès',
+      recording: result.rows[0]
+    });
+  } catch (err) {
+    console.error('Error updating recording:', err);
+    res.status(500).json({ error: 'Échec de la modification' });
+  }
+};
+
 // Delete a recording
 export const deleteRecording = async (req: Request, res: Response) => {
   const recordingId = req.params.id;

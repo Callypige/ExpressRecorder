@@ -14,7 +14,7 @@
         </header>
 
         <!-- Login/Register Section -->
-        <div id="auth-section" class="section">
+        <div id="auth-section" class="section hidden">
             <div class="auth-tabs">
                 <button id="tab-login" class="tab-button active" onclick="showLoginForm()">Connexion</button>
                 <button id="tab-register" class="tab-button" onclick="showRegisterForm()">Inscription</button>
@@ -41,7 +41,7 @@
         </div>
 
         <!-- Main App Section -->
-        <div id="app-section" class="section hidden">
+        <div id="app-section" class="section">
             <div class="user-info">
                 <span>Bienvenue <strong id="current-user"></strong></span>
                 <button onclick="logout()" class="btn-secondary">Déconnexion</button>

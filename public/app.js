@@ -253,13 +253,13 @@ async function saveRecording() {
         return;
     }
 
-    const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+    // Get actual audio duration from the preview element
+    const previewAudio = document.getElementById('preview-audio');
+    const duration = previewAudio.duration && !isNaN(previewAudio.duration) 
+        ? Math.floor(previewAudio.duration) 
+        : Math.floor((Date.now() - recordingStartTime) / 1000);
     
-    const formData = new FormData();
-    formData.append('recording', currentRecordingBlob, `recording-${Date.now()}.webm`);
-    formData.append('duration', duration);
-
-    // Afficher l'indicateur de chargement
+    // Show loading indicator
     const saveBtn = document.getElementById('save-btn');
     const discardBtn = document.getElementById('discard-btn');
     const btnText = document.getElementById('save-btn-text');
@@ -273,9 +273,9 @@ async function saveRecording() {
     btnText.textContent = 'Envoi en cours';
     btnSpinner.classList.remove('hidden');
     uploadProgress.classList.remove('hidden');
-    uploadStatus.textContent = 'Envoi en cours...';
+    uploadStatus.textContent = 'Upload vers Cloudinary...';
     
-    // Animation de la barre de progression
+    // Progress bar animation
     let progress = 0;
     const progressInterval = setInterval(() => {
         if (progress < 90) {
@@ -284,22 +284,60 @@ async function saveRecording() {
         }
     }, 300);
 
-    try {
-        // Timeout de 60 secondes
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
+    let uploadSuccess = false;
 
+    try {
+        // Step 1: Direct upload to Cloudinary
+        uploadStatus.textContent = 'Uploading to Cloudinary...';
+        const cloudinaryFormData = new FormData();
+        cloudinaryFormData.append('file', currentRecordingBlob);
+        cloudinaryFormData.append('upload_preset', 'expressrecorder');
+        cloudinaryFormData.append('folder', 'express-recorder');
+        
+        const cloudinaryResponse = await fetch(
+            `https://api.cloudinary.com/v1_1/dgazl4xbo/auto/upload`,
+            {
+                method: 'POST',
+                body: cloudinaryFormData
+            }
+        );
+
+        console.log('Cloudinary response status:', cloudinaryResponse.status);
+
+        if (!cloudinaryResponse.ok) {
+            const errorText = await cloudinaryResponse.text();
+            console.error('Cloudinary error:', errorText);
+            throw new Error(`Cloudinary upload failed: ${cloudinaryResponse.status}`);
+        }
+
+        const cloudinaryData = await cloudinaryResponse.json();
+        console.log('Cloudinary upload success:', cloudinaryData.secure_url);
+        clearInterval(progressInterval);
+        progressFill.style.width = '70%';
+
+        // Step 2: Save metadata to database
+        uploadStatus.textContent = 'Saving metadata...';
+        
         const response = await fetch('/api/recordings', {
             method: 'POST',
-            body: formData,
-            signal: controller.signal
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                cloudinary_url: cloudinaryData.secure_url,
+                cloudinary_public_id: cloudinaryData.public_id,
+                original_name: `recording-${Date.now()}.webm`,
+                size: currentRecordingBlob.size,
+                duration: duration
+            })
         });
 
-        clearTimeout(timeoutId);
-        clearInterval(progressInterval);
+        console.log('Server response status:', response.status);
+
         progressFill.style.width = '100%';
 
         if (response.ok) {
+            uploadSuccess = true;
             uploadStatus.textContent = '✅ Enregistrement sauvegardé !';
             setTimeout(() => {
                 showToast('Enregistrement sauvegardé avec succès!', 'success');
@@ -308,21 +346,15 @@ async function saveRecording() {
             }, 500);
         } else {
             const data = await response.json();
-            uploadStatus.textContent = '❌ Erreur lors de l\'envoi';
+            uploadStatus.textContent = '❌ Erreur lors de l\'enregistrement';
             showToast(data.error || 'Erreur lors de la sauvegarde', 'error');
         }
     } catch (error) {
         clearInterval(progressInterval);
-        if (error.name === 'AbortError') {
-            uploadStatus.textContent = '❌ Timeout dépassé';
-            showToast('L\'envoi a pris trop de temps. Réessayez avec un enregistrement plus court.', 'error');
-        } else {
-            uploadStatus.textContent = '❌ Erreur de connexion';
-            showToast('Erreur de connexion au serveur', 'error');
-        }
+        uploadStatus.textContent = '❌ Erreur d\'upload';
+        showToast('Erreur lors de l\'upload : ' + error.message, 'error');
         console.error(error);
     } finally {
-        // Réinitialiser l'interface
         setTimeout(() => {
             saveBtn.disabled = false;
             discardBtn.disabled = false;
@@ -330,7 +362,7 @@ async function saveRecording() {
             btnSpinner.classList.add('hidden');
             uploadProgress.classList.add('hidden');
             progressFill.style.width = '0%';
-        }, response?.ok ? 1000 : 2000);
+        }, uploadSuccess ? 1000 : 2000);
     }
 }
 

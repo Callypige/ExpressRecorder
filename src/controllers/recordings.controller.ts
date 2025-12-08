@@ -3,13 +3,13 @@ import pool from '../database';
 import { Recording } from '../types';
 import { cloudinary } from '../middleware/upload.middleware';
 
-// Create a new recording
+// Create a new recording (with direct Cloudinary upload)
 export const createRecording = async (req: Request, res: Response) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'Aucun fichier uploadé' });
-  }
+  const { cloudinary_url, cloudinary_public_id, original_name, size, duration } = req.body;
 
-  const { duration } = req.body;
+  if (!cloudinary_url || !cloudinary_public_id) {
+    return res.status(400).json({ error: 'URL Cloudinary manquante' });
+  }
 
   try {
     const result = await pool.query(
@@ -17,10 +17,10 @@ export const createRecording = async (req: Request, res: Response) => {
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [
         req.session.userId,
-        req.file.path, // Cloudinary URL
-        req.file.originalname,
-        req.file.size,
-        duration || null
+        cloudinary_url, // Cloudinary URL
+        original_name || 'recording.webm',
+        parseInt(size) || 0,
+        parseFloat(duration) || null
       ]
     );
 

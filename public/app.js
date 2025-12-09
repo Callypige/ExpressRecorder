@@ -294,7 +294,7 @@ async function saveRecording() {
 
     try {
         // Step 1: Direct upload to Cloudinary
-        uploadStatus.textContent = 'Uploading to Cloudinary...';
+        uploadStatus.textContent = 'Chargement...';
         const cloudinaryFormData = new FormData();
         cloudinaryFormData.append('file', currentRecordingBlob);
         cloudinaryFormData.append('upload_preset', 'expressrecorder');
@@ -322,7 +322,7 @@ async function saveRecording() {
         progressFill.style.width = '70%';
 
         // Step 2: Save metadata to database
-        uploadStatus.textContent = 'Saving metadata...';
+        uploadStatus.textContent = 'Bientôt terminé...';
         
         const response = await fetch('/api/recordings', {
             method: 'POST',
@@ -347,7 +347,7 @@ async function saveRecording() {
             uploadStatus.textContent = '✅ Enregistrement sauvegardé !';
             setTimeout(() => {
                 showToast('Enregistrement sauvegardé avec succès!', 'success');
-                discardRecording();
+                cleanupRecording();
                 loadRecordings();
             }, 500);
         } else {
@@ -373,7 +373,18 @@ async function saveRecording() {
 }
 
 // Discard recording
-function discardRecording() {
+async function discardRecording() {
+    const confirmed = await showModal(
+        'Annuler l\'enregistrement',
+        'Êtes-vous sûr de vouloir annuler cet enregistrement ? Il sera définitivement perdu.'
+    );
+    
+    if (confirmed) {
+        cleanupRecording();
+    }
+}
+
+function cleanupRecording() {
     currentRecordingBlob = null;
     document.getElementById('preview-section').classList.add('hidden');
     document.getElementById('preview-audio').src = '';
@@ -427,7 +438,7 @@ async function loadRecordings() {
 async function deleteRecording(id) {
     const confirmed = await showModal(
         'Supprimer l\'enregistrement',
-        'Êtes-vous sûr de vouloir supprimer cet enregistrement? Cette action est irréversible.'
+        'Êtes-vous sûr de vouloir supprimer cet enregistrement ? ATTENTION, cette action est irréversible.'
     );
     
     if (!confirmed) {

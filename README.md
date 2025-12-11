@@ -48,40 +48,6 @@ Ouvrez `http://localhost:3000`
 - **Session** : express-session + connect-pg-simple
 - **Deployment** : Railway
 
-## 📁 Structure du projet
-
-```
-ExpressRecorder/
-├── backend/                         # Serveur Node.js/Express
-│   ├── src/
-│   │   ├── config/
-│   │   │   └── session.config.ts   # Configuration session
-│   │   ├── middleware/
-│   │   │   └── auth.middleware.ts  # Vérification auth
-│   │   ├── routes/
-│   │   │   ├── auth.routes.ts      # Routes authentification
-│   │   │   └── recordings.routes.ts # Routes enregistrements
-│   │   ├── controllers/
-│   │   │   ├── auth.controller.ts   # Logique auth
-│   │   │   └── recordings.controller.ts # Logique enregistrements
-│   │   ├── database.ts             # Config PostgreSQL
-│   │   ├── types.ts                # Types TypeScript
-│   │   └── server.ts               # Point d'entrée
-│   ├── dist/                       # Code compilé
-│   ├── package.json
-│   └── tsconfig.json
-│
-└── frontend/                        # Code client
-    ├── index.html
-    ├── styles.css
-    └── js/
-        ├── ui.js                    # Modales, toasts, formatage
-        ├── auth.js                  # Authentification
-        ├── recorder.js              # Enregistrement audio
-        ├── recordings.js            # Gestion des enregistrements
-        └── main.js                  # Initialisation
-```
-
 ## 🔌 API Endpoints
 
 **Auth**
@@ -117,14 +83,6 @@ L'application est déployée sur Railway avec :
 - Cloudinary pour le stockage des fichiers
 - Variables d'environnement configurées
 - Build automatique depuis GitHub
-
-## 🔒 Sécurité
-
-- Mots de passe hashés avec **bcrypt** (10 rounds)
-- Sessions **HTTP-only cookies** stockées en PostgreSQL
-- Validation email et mot de passe (min 8 caractères)
-- Contraintes UNIQUE sur username/email
-- Middleware d'authentification sur routes sensibles
 - Upload direct vers Cloudinary (évite timeout Railway 60s)
 - Variables d'environnement pour les secrets
 

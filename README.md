@@ -2,12 +2,16 @@
 
 Application web d'enregistrement vocal avec authentification sécurisée. Construite avec Node.js/Express, TypeScript et interface moderne dark mode.
 
+🌐 **Application en ligne** : [https://expressrecorder-production.up.railway.app](https://expressrecorder-production.up.railway.app)
+
 ## ✨ Fonctionnalités
 
 - 🎤 **Enregistrement vocal** - Enregistrez depuis le navigateur (MediaRecorder API)
 - 🔐 **Authentification sécurisée** - Inscription/connexion avec bcrypt
-- 💾 **Stockage persistant** - Base SQLite + fichiers audio
-- 📱 **Design moderne** - Interface dark mode avec glassmorphism
+- ☁️ **Stockage cloud** - Cloudinary pour les enregistrements audio
+- 🗄️ **Base de données** - PostgreSQL hébergée sur Railway
+- 📱 **Design moderne** - Interface dark mode minimaliste
+- ✏️ **Renommage** - Modification des noms d'enregistrements
 - 🎧 **Gestion complète** - Lecture, sauvegarde, suppression des enregistrements
 
 ## 🚀 Installation
@@ -17,11 +21,20 @@ Application web d'enregistrement vocal avec authentification sécurisée. Constr
 git clone https://github.com/Callypige/ExpressRecorder.git
 cd ExpressRecorder
 
-# 2. Installer les dépendances
+# 2. Installer les dépendances backend
+cd backend
 npm install
 
-# 3. Démarrer le serveur
-npm start
+# 3. Configurer les variables d'environnement
+# Créer un fichier .env à la racine avec :
+# DATABASE_URL=postgresql://...
+# CLOUDINARY_CLOUD_NAME=...
+# CLOUDINARY_API_KEY=...
+# CLOUDINARY_API_SECRET=...
+# SESSION_SECRET=...
+
+# 4. Démarrer le serveur
+npm run dev
 ```
 
 Ouvrez `http://localhost:3000`
@@ -29,29 +42,44 @@ Ouvrez `http://localhost:3000`
 ## 🛠️ Technologies
 
 - **Backend** : Node.js, Express, TypeScript, bcrypt
-- **Database** : SQLite3
+- **Database** : PostgreSQL (Railway)
+- **Storage** : Cloudinary (audio files)
 - **Frontend** : HTML5, CSS3 (dark mode), JavaScript vanilla
-- **Upload** : Multer (50MB max)
-- **Session** : express-session (cookies HTTP-only)
+- **Session** : express-session + connect-pg-simple
+- **Deployment** : Railway
 
 ## 📁 Structure du projet
 
 ```
-src/
-├── config/
-│   └── session.config.ts       # Configuration session
-├── middleware/
-│   ├── auth.middleware.ts      # Vérification auth
-│   └── upload.middleware.ts    # Config Multer
-├── routes/
-│   ├── auth.routes.ts          # Routes authentification
-│   └── recordings.routes.ts    # Routes enregistrements
-├── controllers/
-│   ├── auth.controller.ts      # Logique auth
-│   └── recordings.controller.ts # Logique enregistrements
-├── database.ts                 # Config SQLite
-├── types.ts                    # Types TypeScript
-└── server.ts                   # Point d'entrée (35 lignes)
+ExpressRecorder/
+├── backend/                         # Serveur Node.js/Express
+│   ├── src/
+│   │   ├── config/
+│   │   │   └── session.config.ts   # Configuration session
+│   │   ├── middleware/
+│   │   │   └── auth.middleware.ts  # Vérification auth
+│   │   ├── routes/
+│   │   │   ├── auth.routes.ts      # Routes authentification
+│   │   │   └── recordings.routes.ts # Routes enregistrements
+│   │   ├── controllers/
+│   │   │   ├── auth.controller.ts   # Logique auth
+│   │   │   └── recordings.controller.ts # Logique enregistrements
+│   │   ├── database.ts             # Config PostgreSQL
+│   │   ├── types.ts                # Types TypeScript
+│   │   └── server.ts               # Point d'entrée
+│   ├── dist/                       # Code compilé
+│   ├── package.json
+│   └── tsconfig.json
+│
+└── frontend/                        # Code client
+    ├── index.html
+    ├── styles.css
+    └── js/
+        ├── ui.js                    # Modales, toasts, formatage
+        ├── auth.js                  # Authentification
+        ├── recorder.js              # Enregistrement audio
+        ├── recordings.js            # Gestion des enregistrements
+        └── main.js                  # Initialisation
 ```
 
 ## 🔌 API Endpoints
@@ -63,26 +91,42 @@ src/
 - `POST /api/logout` - Déconnexion
 
 **Recordings**
-- `POST /api/recordings` - Upload enregistrement (protégé)
+- `POST /api/recordings` - Upload enregistrement (protégé, JSON metadata)
 - `GET /api/recordings` - Liste des enregistrements (protégé)
+- `PATCH /api/recordings/:id` - Renommer un enregistrement (protégé)
 - `DELETE /api/recordings/:id` - Supprimer (protégé)
 
 ## ⚙️ Scripts
 
 ```bash
-npm start      # Compile + démarre le serveur
-npm run build  # Compile TypeScript
-npm run dev    # Mode développement (ts-node)
-npm run watch  # Compilation auto
+# Depuis la racine
+npm run dev      # Lance le serveur en développement
+npm run build    # Compile le backend TypeScript
+npm start        # Lance le serveur en production
+
+# Depuis backend/
+npm run dev      # ts-node src/server.ts
+npm run build    # tsc
+npm start        # node dist/server.js
 ```
+
+## 🚢 Déploiement Railway
+
+L'application est déployée sur Railway avec :
+- PostgreSQL database
+- Cloudinary pour le stockage des fichiers
+- Variables d'environnement configurées
+- Build automatique depuis GitHub
 
 ## 🔒 Sécurité
 
 - Mots de passe hashés avec **bcrypt** (10 rounds)
-- Sessions **HTTP-only cookies**
+- Sessions **HTTP-only cookies** stockées en PostgreSQL
 - Validation email et mot de passe (min 8 caractères)
 - Contraintes UNIQUE sur username/email
 - Middleware d'authentification sur routes sensibles
+- Upload direct vers Cloudinary (évite timeout Railway 60s)
+- Variables d'environnement pour les secrets
 
 ## 📝 Licence
 

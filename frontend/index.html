@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpressRecorder - Enregistreur Audio</title>
+    <link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎙️ ExpressRecorder</h1>
+            <p>Enregistreur vocal</p>
+        </header>
+
+        <!-- Login/Register Section -->
+        <div id="auth-section" class="section hidden">
+            <div class="auth-tabs">
+                <button id="tab-login" class="tab-button active" onclick="showLoginForm()">Connexion</button>
+                <button id="tab-register" class="tab-button" onclick="showRegisterForm()">Inscription</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form">
+                <h2>Se connecter</h2>
+                <input type="email" id="login-email" placeholder="Email" required />
+                <input type="password" id="login-password" placeholder="Mot de passe" required />
+                <button onclick="login()" class="btn-primary">Se connecter</button>
+                <p class="error-message" id="login-error"></p>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-form" class="auth-form hidden">
+                <h2>Créer un compte</h2>
+                <input type="text" id="register-username" placeholder="Nom d'utilisateur" required />
+                <input type="email" id="register-email" placeholder="Email" required />
+                <input type="password" id="register-password" placeholder="Mot de passe (min. 8 caractères)" required />
+                <button onclick="register()" class="btn-primary">S'inscrire</button>
+                <p class="error-message" id="register-error"></p>
+            </div>
+        </div>
+
+        <!-- Main App Section -->
+        <div id="app-section" class="section">
+            <div class="user-info">
+                <span>Bienvenue <strong id="current-user"></strong></span>
+                <button onclick="logout()" class="btn-secondary">Déconnexion</button>
+            </div>
+
+            <!-- Recording Controls -->
+            <div class="recorder-section">
+                <h2>Nouvel enregistrement</h2>
+
+                <div class="recorder-controls">
+                    <button id="start-recording" onclick="startRecording()" class="btn-primary">
+                        ⏺ Démarrer l'enregistrement
+                    </button>
+                    <button id="stop-recording" onclick="stopRecording()" class="btn-danger hidden">
+                        ⏹ Arrêter l'enregistrement
+                    </button>
+                </div>
+
+                <div id="recording-status" class="status hidden">
+                    <div class="recording-indicator">
+                        <span class="pulse"></span>
+                        <span>Enregistrement en cours...</span>
+                    </div>
+                    <div id="recording-timer">00:00</div>
+                </div>
+
+                <div id="preview-section" class="hidden">
+                    <h3>Aperçu de l'enregistrement</h3>
+                    <audio id="preview-audio" controls></audio>
+                    <div class="preview-controls">
+                        <button id="save-btn" onclick="saveRecording()" class="btn-success">
+                            <span id="save-btn-text">💾 Sauvegarder</span>
+                            <span id="save-btn-spinner" class="btn-spinner hidden">⏳</span>
+                        </button>
+                        <button id="discard-btn" onclick="discardRecording()" class="btn-secondary">
+                            🗑️ Annuler
+                        </button>
+                    </div>
+                    <div id="upload-progress" class="upload-progress hidden">
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <p id="upload-status" class="upload-status">Envoi en cours...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recordings List -->
+            <div class="recordings-section">
+                <h2>Mes enregistrements</h2>
+                <div id="recordings-list" class="recordings-list">
+                    <p class="empty-state">Aucun enregistrement pour le moment</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 id="modal-title"></h3>
+            <p id="modal-message"></p>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn-secondary">Annuler</button>
+                <button id="modal-confirm" class="btn-danger">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

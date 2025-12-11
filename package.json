@@ -1,13 +1,13 @@
 {
   "name": "expressrecorder",
   "version": "1.0.0",
-  "description": "Voice and drum recorder application with Express.js and TypeScript",
-  "main": "dist/server.js",
+  "description": "Voice recorder application with Express.js and TypeScript",
   "scripts": {
-    "build": "tsc",
-    "start": "npm run build && node dist/server.js",
-    "dev": "ts-node src/server.ts",
-    "watch": "tsc --watch"
+    "dev": "cd backend && npm run dev",
+    "build": "cd backend && npm run build",
+    "start": "cd backend && npm start",
+    "install:backend": "cd backend && npm install",
+    "install:all": "npm run install:backend"
   },
   "keywords": [
     "recorder",
@@ -17,28 +17,5 @@
     "typescript"
   ],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "bcrypt": "^6.0.0",
-    "body-parser": "^2.2.1",
-    "cloudinary": "^2.8.0",
-    "connect-pg-simple": "^10.0.0",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "express-session": "^1.18.2",
-    "multer": "^2.0.2",
-    "multer-storage-cloudinary": "^2.2.1",
-    "pg": "^8.16.3"
-  },
-  "devDependencies": {
-    "@types/connect-pg-simple": "^7.0.3",
-    "@types/express": "^5.0.6",
-    "@types/express-session": "^1.18.2",
-    "@types/multer": "^2.0.0",
-    "@types/node": "^24.10.1",
-    "@types/pg": "^8.15.6",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
-  }
+  "license": "ISC"
 }

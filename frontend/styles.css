@@ -1,0 +1,652 @@
+/* Clean & Professional Design */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0a0e27;
+    min-height: 100vh;
+    padding: 20px;
+    color: #e2e8f0;
+}
+
+.container {
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+header h1 {
+    font-size: 2.5em;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+header p {
+    font-size: 1.1em;
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.section {
+    background: #1a1f3a;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    border: 1px solid #2d3548;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Auth */
+.auth-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    justify-content: center;
+    background: #0f1429;
+    padding: 6px;
+    border-radius: 12px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 12px 24px;
+    background: transparent;
+    color: #64748b;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.tab-button.active {
+    background: #3b82f6;
+    color: white;
+}
+
+.auth-form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.auth-form h2 {
+    margin-bottom: 24px;
+    color: #f1f5f9;
+    text-align: center;
+    font-weight: 600;
+    font-size: 22px;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: #0f1429;
+    border: 1px solid #2d3548;
+    border-radius: 10px;
+    font-size: 15px;
+    color: #e2e8f0;
+    transition: all 0.2s;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: #1a1f3a;
+}
+
+.auth-form input::placeholder {
+    color: #475569;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.error-message {
+    color: #f87171;
+    text-align: center;
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+/* User info */
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: #0f1429;
+    border-radius: 12px;
+}
+
+.user-info span {
+    color: #cbd5e1;
+    font-size: 15px;
+}
+
+.user-info strong {
+    color: #60a5fa;
+    font-weight: 600;
+}
+
+.btn-secondary {
+    width: auto;
+    padding: 10px 20px;
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #2d3548;
+}
+
+.btn-secondary:hover {
+    background: #334155;
+    color: #cbd5e1;
+}
+
+/* Recording */
+.recorder-section h2 {
+    color: #f1f5f9;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.recorder-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.recorder-controls button {
+    flex: 1;
+    max-width: 200px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#start-recording {
+    background: #10b981;
+    color: white;
+}
+
+#start-recording:hover {
+    background: #059669;
+}
+
+#stop-recording {
+    background: #ef4444;
+    color: white;
+}
+
+#stop-recording:hover {
+    background: #dc2626;
+}
+
+.recording-status {
+    text-align: center;
+    padding: 32px 24px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+    border-radius: 12px;
+    margin-bottom: 32px;
+    border: 2px solid #ef4444;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    animation: recordPulse 2s ease-in-out infinite;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+@keyframes recordPulse {
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        border-color: #ef4444;
+    }
+    50% { 
+        box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+        border-color: #dc2626;
+    }
+}
+
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fca5a5;
+}
+
+.pulse {
+    width: 14px;
+    height: 14px;
+    background: #ef4444;
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.7;
+    }
+}
+
+#recording-timer {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ef4444;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+    line-height: 1;
+    text-align: center;
+}
+
+/* Preview */
+.preview-section {
+    padding: 24px;
+    background: #0f1429;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    margin-top: 24px;
+}
+
+.preview-section h3 {
+    color: #f1f5f9;
+    margin-bottom: 32px;
+    padding-bottom: 0;
+    border-bottom: none;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+#preview-audio {
+    width: 100%;
+    margin-bottom: 20px;
+    margin-top: 8px;
+}
+
+.preview-controls {
+    display: flex;
+    gap: 12px;
+}
+
+.preview-controls button {
+    flex: 1;
+    padding: 14px;
+}
+
+#save-btn {
+    background: #3b82f6;
+    color: white;
+}
+
+#save-btn:hover {
+    background: #2563eb;
+}
+
+#discard-btn {
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #2d3548;
+}
+
+#discard-btn:hover {
+    background: #334155;
+}
+
+/* Progress */
+.upload-progress {
+    margin-top: 16px;
+    padding: 16px;
+    background: #0a0e27;
+    border-radius: 10px;
+}
+
+.upload-status {
+    text-align: center;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #3b82f6;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+/* Recordings */
+.recordings-section {
+    margin-top: 48px;
+    padding-top: 48px;
+    border-top: 2px solid #2d3548;
+}
+
+.recordings-section h2 {
+    color: #f1f5f9;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.recordings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.empty-state {
+    text-align: center;
+    color: #475569;
+    padding: 40px;
+    font-size: 15px;
+}
+
+.recording-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #0f1429;
+    border-radius: 12px;
+    border: 1px solid #2d3548;
+    transition: all 0.2s;
+}
+
+.recording-item:hover {
+    background: #1a1f3a;
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+}
+
+.recording-icon {
+    font-size: 28px;
+}
+
+.recording-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.recording-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #f1f5f9;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.recording-meta {
+    font-size: 13px;
+    color: #64748b;
+    display: flex;
+    gap: 12px;
+}
+
+.recording-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.recording-actions audio {
+    max-width: 200px;
+}
+
+.btn-delete {
+    padding: 8px 16px;
+    background: #1e293b;
+    color: #f87171;
+    border: 1px solid #2d3548;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    width: auto;
+}
+
+.btn-delete:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+/* Edit */
+.btn-edit {
+    background: transparent;
+    border: 1px solid #2d3548;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px 8px;
+    opacity: 0.7;
+    transition: all 0.2s;
+    color: #64748b;
+    width: auto;
+    flex-shrink: 0;
+}
+
+.btn-edit:hover {
+    opacity: 1;
+    background: #1e293b;
+    border-color: #3b82f6;
+    color: #60a5fa;
+}
+
+.btn-save, .btn-cancel {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px 6px;
+    transition: all 0.2s;
+    width: auto;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.btn-save:hover {
+    transform: scale(1.15);
+}
+
+.btn-cancel:hover {
+    transform: scale(1.15);
+}
+
+.edit-input {
+    padding: 6px 10px;
+    background: #0a0e27;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    color: #f1f5f9;
+    font-size: 14px;
+    outline: none;
+    font-weight: 600;
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1a1f3a;
+    color: #e2e8f0;
+    padding: 16px 24px;
+    border-radius: 12px;
+    border: 1px solid #2d3548;
+    transform: translateX(400px);
+    transition: transform 0.3s;
+    z-index: 1000;
+    max-width: 350px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast.success {
+    border-color: #10b981;
+}
+
+.toast.error {
+    border-color: #ef4444;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+}
+
+.modal {
+    background: #1a1f3a;
+    padding: 32px;
+    border-radius: 16px;
+    max-width: 450px;
+    width: 90%;
+    border: 1px solid #2d3548;
+}
+
+.modal h2 {
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.modal p {
+    color: #94a3b8;
+    margin-bottom: 24px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-buttons button {
+    flex: 1;
+    padding: 12px;
+}
+
+/* Spinner */
+.btn-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .section {
+        padding: 20px;
+    }
+    
+    .recording-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .recording-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .recording-actions audio {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .recorder-controls {
+        flex-direction: column;
+    }
+    
+    .recorder-controls button {
+        max-width: 100%;
+    }
+}

@@ -1,47 +1,104 @@
 // Recordings list management
 
+let allRecordings = []; // Store all recordings for filtering
+
 // Load recordings
 async function loadRecordings() {
     try {
         const response = await fetch('/api/recordings');
         const data = await response.json();
 
-        const recordingsList = document.getElementById('recordings-list');
-        
         if (!data.recordings || data.recordings.length === 0) {
-            recordingsList.innerHTML = '<p class="empty-state">Aucun enregistrement pour le moment</p>';
+            allRecordings = [];
+            document.getElementById('recordings-list').innerHTML = '<p class="empty-state">Aucun enregistrement pour le moment</p>';
             return;
         }
 
-        recordingsList.innerHTML = data.recordings.map(recording => `
-            <div class="recording-item">
-                <div class="recording-icon">
-                    🎤
-                </div>
-                <div class="recording-info">
-                    <div class="recording-title" id="title-${recording.id}">
-                        <span id="title-text-${recording.id}">${recording.original_name || 'Enregistrement vocal'}</span>
-                        <button class="btn-edit" onclick="editRecordingName(${recording.id})" title="Renommer">
-                            ✏️
-                        </button>
-                    </div>
-                    <div class="recording-meta">
-                        ${formatDate(recording.created_at)} • 
-                        ${formatSize(recording.size)}
-                        ${recording.duration ? ` • ${formatDuration(recording.duration)}` : ''}
-                    </div>
-                </div>
-                <div class="recording-actions">
-                    <audio controls src="${recording.filename}"></audio>
-                    <button class="btn-delete" onclick="deleteRecording(${recording.id})">
-                        🗑️ Supprimer
-                    </button>
-                </div>
-            </div>
-        `).join('');
+        // Sort by date (most recent first)
+        allRecordings = data.recordings.sort((a, b) => 
+            new Date(b.created_at) - new Date(a.created_at)
+        );
+
+        // Display all recordings initially
+        displayRecordings(allRecordings);
     } catch (error) {
         console.error('Error loading recordings:', error);
     }
+}
+
+// Display recordings
+function displayRecordings(recordings) {
+    const recordingsList = document.getElementById('recordings-list');
+    
+    if (!recordings || recordings.length === 0) {
+        recordingsList.innerHTML = '<p class="empty-state">Aucun enregistrement trouvé pour cette période</p>';
+        return;
+    }
+
+    recordingsList.innerHTML = recordings.map(recording => `
+        <div class="recording-item">
+            <div class="recording-icon">
+                🎤
+            </div>
+            <div class="recording-info">
+                <div class="recording-title" id="title-${recording.id}">
+                    <span id="title-text-${recording.id}">${recording.original_name || 'Enregistrement vocal'}</span>
+                    <button class="btn-edit" onclick="editRecordingName(${recording.id})" title="Renommer">
+                        ✏️
+                    </button>
+                </div>
+                <div class="recording-meta">
+                    ${formatDate(recording.created_at)} • 
+                    ${formatSize(recording.size)}
+                    ${recording.duration ? ` • ${formatDuration(recording.duration)}` : ''}
+                </div>
+            </div>
+            <div class="recording-actions">
+                <audio controls src="${recording.filename}"></audio>
+                <button class="btn-delete" onclick="deleteRecording(${recording.id})">
+                    🗑️ Supprimer
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Filter recordings by date
+window.filterRecordings = function() {
+    const filter = document.getElementById('date-filter').value;
+    const now = new Date();
+    let filtered = allRecordings;
+
+    switch (filter) {
+        case 'today':
+            filtered = allRecordings.filter(rec => {
+                const recDate = new Date(rec.created_at);
+                return recDate.toDateString() === now.toDateString();
+            });
+            break;
+        case 'week':
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            filtered = allRecordings.filter(rec => 
+                new Date(rec.created_at) >= weekAgo
+            );
+            break;
+        case 'month':
+            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            filtered = allRecordings.filter(rec => 
+                new Date(rec.created_at) >= monthAgo
+            );
+            break;
+        case 'year':
+            const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+            filtered = allRecordings.filter(rec => 
+                new Date(rec.created_at) >= yearAgo
+            );
+            break;
+        default:
+            filtered = allRecordings;
+    }
+
+    displayRecordings(filtered);
 }
 
 // Delete recording

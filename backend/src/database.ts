@@ -37,11 +37,14 @@ const initDatabase = async () => {
     console.log('✅ Database tables initialized');
   } catch (error) {
     console.error('❌ Database initialization error:', error);
-    throw error;
+    process.exit(1);
   }
 };
 
 // Initialize on import
-initDatabase();
+initDatabase().catch(err => {
+  console.error('Fatal database error:', err);
+  process.exit(1);
+});
 
 export default pool;

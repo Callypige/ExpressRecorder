@@ -91,7 +91,19 @@
 
             <!-- Recordings List -->
             <div class="recordings-section">
-                <h2>Mes enregistrements</h2>
+                <div class="recordings-header">
+                    <h2>Mes enregistrements</h2>
+                    <div class="filter-container">
+                        <label class="filter-label" for="date-filter">📅 Période :</label>
+                        <select id="date-filter" class="filter-select" onchange="filterRecordings()">
+                            <option value="all">Tous</option>
+                            <option value="today">Aujourd'hui</option>
+                            <option value="week">Cette semaine</option>
+                            <option value="month">Ce mois</option>
+                            <option value="year">Cette année</option>
+                        </select>
+                    </div>
+                </div>
                 <div id="recordings-list" class="recordings-list">
                     <p class="empty-state">Aucun enregistrement pour le moment</p>
                 </div>

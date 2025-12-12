@@ -2,6 +2,8 @@
 
 Application web d'enregistrement vocal avec authentification sécurisée. Construite avec Node.js/Express, TypeScript et interface moderne dark mode.
 
+<img width="524" height="403" alt="Capture d’écran 2025-12-11 180502" src="https://github.com/user-attachments/assets/25613368-a8ea-4462-8d3e-3bf92a3abb0c" />
+
 🌐 **Application en ligne** : [https://expressrecorder-production.up.railway.app](https://expressrecorder-production.up.railway.app)
 
 ## ✨ Fonctionnalités
